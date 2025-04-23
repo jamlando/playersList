@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Player, Game } from '../types/database';
 import { supabase } from '../lib/supabase';
 import { LeaderboardModal } from './LeaderboardModal';
-import { Celebration } from '../components/Celebration';
-import { WallOfChampions } from '../components/WallOfChampions';
 
 interface GameProps {
   categoryId: string;
@@ -31,8 +29,6 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
   const [isGameOver, setIsGameOver] = useState(false);
   const [revealedPlayers, setRevealedPlayers] = useState<Set<string>>(new Set());
   const [isLeaderboardModalOpen, setIsLeaderboardModalOpen] = useState(false);
-  const [showGiveUpPrompt, setShowGiveUpPrompt] = useState(false);
-  const [timeElapsed, setTimeElapsed] = useState(0);
 
   const endGame = useCallback(async () => {
     if (!game) return;
@@ -71,23 +67,6 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
 
     return () => clearInterval(timer);
   }, [timeLeft, endGame]);
-
-  useEffect(() => {
-    if (isGameOver) return;
-
-    const timer = setInterval(() => {
-      setTimeElapsed((prev) => {
-        const newTime = prev + 1;
-        // Show give up prompt after 60 seconds
-        if (newTime === 60) {
-          setShowGiveUpPrompt(true);
-        }
-        return newTime;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isGameOver, setShowGiveUpPrompt]);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -150,13 +129,11 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
       setIncorrectGuesses((prev) => prev + 1);
     }
 
-    // Update recent guesses
     setRecentGuesses(prev => [
       { guess: currentGuess.trim(), isCorrect, playerName: player?.name },
-      ...prev.slice(0, 4)  // Keep only the 5 most recent guesses
+      ...prev.slice(0, 4)
     ]);
 
-    // Record the guess
     await supabase.from('game_guesses').insert({
       gameid: game.id,
       playerid: player?.id,
@@ -178,7 +155,6 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
 
   const handleLeaderboardSuccess = () => {
     setIsLeaderboardModalOpen(false);
-    // TODO: Show leaderboard view
   };
 
   return (
