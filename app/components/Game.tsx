@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Player, Game } from '../types/database';
 import { supabase } from '../lib/supabase';
 import { LeaderboardModal } from './LeaderboardModal';
@@ -34,7 +34,7 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
   const [showGiveUpPrompt, setShowGiveUpPrompt] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
 
-  const endGame = async () => {
+  const endGame = useCallback(async () => {
     if (!game) return;
 
     const { data, error } = await supabase
@@ -57,7 +57,7 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
 
     setIsGameOver(true);
     onGameEnd(data);
-  };
+  }, [game, correctGuesses, incorrectGuesses, onGameEnd]);
 
   useEffect(() => {
     if (timeLeft <= 0) {
