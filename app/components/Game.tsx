@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import type { Player, Game, GameGuess } from '../types/database';
 import { supabase } from '../lib/supabase';
 import { LeaderboardModal } from './LeaderboardModal';
+import { Celebration } from './Celebration';
+import { WallOfChampions } from './WallOfChampions';
 
 interface GameProps {
   categoryId: string;
@@ -29,6 +31,8 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
   const [isGameOver, setIsGameOver] = useState(false);
   const [revealedPlayers, setRevealedPlayers] = useState<Set<string>>(new Set());
   const [isLeaderboardModalOpen, setIsLeaderboardModalOpen] = useState(false);
+  const [showGiveUpPrompt, setShowGiveUpPrompt] = useState(false);
+  const [timeElapsed, setTimeElapsed] = useState(0);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -86,6 +90,23 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
 
     return () => clearInterval(timer);
   }, [timeLeft]);
+
+  useEffect(() => {
+    if (isGameOver) return;
+
+    const timer = setInterval(() => {
+      setTimeElapsed((prev) => {
+        const newTime = prev + 1;
+        // Show give up prompt after 60 seconds
+        if (newTime === 60) {
+          setShowGiveUpPrompt(true);
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isGameOver, setShowGiveUpPrompt]);
 
   const handleGuess = async () => {
     if (!currentGuess.trim() || !game || isGameOver) return;

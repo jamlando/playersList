@@ -85,11 +85,11 @@ export function CategorySelect({ onSelect }: CategorySelectProps) {
           <h3 className="text-lg font-medium mb-2">How to Play</h3>
           <ul className="list-disc pl-5 space-y-2 text-gray-700">
             <li>Select a category and team from the dropdowns below</li>
-            <li>You'll have 1 minute to guess as many players as possible</li>
-            <li>Type a player's name and press Enter or click Guess</li>
+            <li>You&apos;ll have 1 minute to guess as many players as possible</li>
+            <li>Type a player&apos;s name and press Enter or click Guess</li>
             <li>Correct guesses will reveal the player on the list</li>
             <li>You can give up at any time by clicking the Give Up button</li>
-            <li>If you guess all 10 players correctly, you'll be added to the Wall of Champions!</li>
+            <li>If you guess all 10 players correctly, you&apos;ll be added to the Wall of Champions!</li>
           </ul>
         </div>
       </div>
