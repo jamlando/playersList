@@ -56,13 +56,7 @@ export default function Home() {
             <h2 className="text-2xl font-semibold mb-4">Game Over!</h2>
             <div className="space-y-4">
               <p className="text-lg">
-                Final Score: {completedGame.score}
-              </p>
-              <p className="text-lg">
-                Correct Guesses: {completedGame.correctGuesses}
-              </p>
-              <p className="text-lg">
-                Incorrect Guesses: {completedGame.incorrectGuesses}
+                Score: {completedGame.score} | Correct: {completedGame.correctguesses} | Incorrect: {completedGame.incorrectguesses}
               </p>
               <button
                 onClick={() => setCompletedGame(null)}
