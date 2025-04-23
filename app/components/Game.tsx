@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import type { Player, Game, GameGuess } from '../types/database';
+import type { Player, Game } from '../types/database';
 import { supabase } from '../lib/supabase';
 import { LeaderboardModal } from './LeaderboardModal';
-import { Celebration } from './Celebration';
-import { WallOfChampions } from './WallOfChampions';
+import { Celebration } from '../components/Celebration';
+import { WallOfChampions } from '../components/WallOfChampions';
 
 interface GameProps {
   categoryId: string;
@@ -33,6 +33,61 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
   const [isLeaderboardModalOpen, setIsLeaderboardModalOpen] = useState(false);
   const [showGiveUpPrompt, setShowGiveUpPrompt] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
+
+  const endGame = async () => {
+    if (!game) return;
+
+    const { data, error } = await supabase
+      .from('games')
+      .update({
+        endtime: new Date(),
+        status: 'completed',
+        score: correctGuesses - incorrectGuesses,
+        correctguesses: correctGuesses,
+        incorrectguesses: incorrectGuesses,
+      })
+      .eq('id', game.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error ending game:', error);
+      return;
+    }
+
+    setIsGameOver(true);
+    onGameEnd(data);
+  };
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      endGame();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, endGame]);
+
+  useEffect(() => {
+    if (isGameOver) return;
+
+    const timer = setInterval(() => {
+      setTimeElapsed((prev) => {
+        const newTime = prev + 1;
+        // Show give up prompt after 60 seconds
+        if (newTime === 60) {
+          setShowGiveUpPrompt(true);
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isGameOver, setShowGiveUpPrompt]);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -78,36 +133,6 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
     createGame();
   }, [categoryId, teamId, timeLimit]);
 
-  useEffect(() => {
-    if (timeLeft <= 0) {
-      endGame();
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft]);
-
-  useEffect(() => {
-    if (isGameOver) return;
-
-    const timer = setInterval(() => {
-      setTimeElapsed((prev) => {
-        const newTime = prev + 1;
-        // Show give up prompt after 60 seconds
-        if (newTime === 60) {
-          setShowGiveUpPrompt(true);
-        }
-        return newTime;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isGameOver, setShowGiveUpPrompt]);
-
   const handleGuess = async () => {
     if (!currentGuess.trim() || !game || isGameOver) return;
 
@@ -141,31 +166,6 @@ export function Game({ categoryId, teamId, timeLimit, onGameEnd, onNewGame }: Ga
     });
 
     setCurrentGuess('');
-  };
-
-  const endGame = async () => {
-    if (!game) return;
-
-    const { data, error } = await supabase
-      .from('games')
-      .update({
-        endtime: new Date(),
-        status: 'completed',
-        score: correctGuesses - incorrectGuesses,
-        correctguesses: correctGuesses,
-        incorrectguesses: incorrectGuesses,
-      })
-      .eq('id', game.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error ending game:', error);
-      return;
-    }
-
-    setIsGameOver(true);
-    onGameEnd(data);
   };
 
   const revealPlayer = (playerId: string) => {
