@@ -42,13 +42,13 @@ export function Leaderboard() {
 
         const formattedEntries = data.map(game => ({
           id: game.id,
-          username: game.users.username,
+          username: game.users[0]?.username || 'Anonymous',
           score: game.score,
           correctguesses: game.correctguesses,
           incorrectguesses: game.incorrectguesses,
           timelimit: game.timelimit,
-          category: game.categories.name,
-          team: game.teams.name,
+          category: game.categories[0]?.name || 'Unknown',
+          team: game.teams[0]?.name || 'Unknown',
           created_at: game.created_at
         }));
 
